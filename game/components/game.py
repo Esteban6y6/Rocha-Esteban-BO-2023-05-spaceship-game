@@ -8,6 +8,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption(TITLE)
         pygame.display.set_icon(ICON)
+        pygame.mixer.music.load('game/assets/Space.mp3')
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.playing = False
@@ -18,6 +19,7 @@ class Game:
 
     def run(self):
         # Game loop: events - update - draw
+        pygame.mixer.music.play(-1)
         self.playing = True
         while self.playing:
             self.events()
