@@ -17,6 +17,9 @@ class Game:
         self.game_speed = 10
         self.x_pos_bg = 0
         self.y_pos_bg = 0
+        #
+        self.space_pressed = False
+        #
         self.player = Spaceship()
         self.enemy_manager = EnemyManager()
         self.bullet_manager = BulletManager()
@@ -36,18 +39,31 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.playing = False
-
+            #
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    self.space_pressed = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_SPACE:
+                    self.space_pressed = False
+            #
     def update(self):
         user_input = pygame.key.get_pressed()
         self.player.update(user_input)
+        #
+        if self.space_pressed:
+            self.player.shoot()
+        #
         self.enemy_manager.update(self)
         self.bullet_manager.update(self)
+        self.player.reset_shooting()
 
     def draw(self):
         self.clock.tick(FPS)
         self.screen.fill((255, 255, 255))
         self.draw_background()
         self.player.draw(self.screen)
+        self.player.draw_bullets(self.screen)
         self.enemy_manager.draw(self.screen)
         self.bullet_manager.draw(self.screen)
         pygame.display.update()

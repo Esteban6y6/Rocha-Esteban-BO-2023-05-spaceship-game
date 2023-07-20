@@ -16,6 +16,7 @@ class Enemy(Sprite):
     FINAL_SHOOTING_TIME = 3000
 
     def __init__(self):
+        #
         self.enemy_type = random.choice([ENEMY_1, ENEMY_2, ENEMY_3])
         self.image = pygame.transform.scale(self.enemy_type, (self.ENEMY_WIDTH, self.ENEMY_HEIGHT))
         self.rect = self.image.get_rect(midtop=(random.choice(self.X_POS_RANGE), self.Y_POS))
@@ -35,7 +36,7 @@ class Enemy(Sprite):
         elif self.enemy_type == ENEMY_3:
             self.SPEED_ON_Y = 3
             self.SPEED_ON_X = 14
-
+        #
     def update(self, enemies, game):
         self.rect.y += self.SPEED_ON_Y
         self.shoot(game.bullet_manager)
@@ -63,7 +64,7 @@ class Enemy(Sprite):
 
         if self.movement_count >= self.moves_before_change:
             self.movement_count = 0
-
+    #
     def reset(self):
         self.enemy_type = random.choice([ENEMY_1, ENEMY_2, ENEMY_3])
         self.image = pygame.transform.scale(self.enemy_type, (self.ENEMY_WIDTH, self.ENEMY_HEIGHT))
@@ -71,7 +72,7 @@ class Enemy(Sprite):
         self.direction = self.MOVES[random.randint(0, 1)]
         self.movement_count = 0
         self.moves_before_change = random.randint(20, 50)
-    
+    #
     def shoot(self, bullet_manager):
         current_time = pygame.time.get_ticks()
 

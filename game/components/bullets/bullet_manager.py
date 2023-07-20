@@ -14,6 +14,10 @@ class BulletManager:
                 pygame.time.delay(2000)
                 break
 
+        #
+        for bullet in self.player_bullets:
+            bullet.update(self.player_bullets)
+        #
     def draw(self, screen):
         for bullet in self.enemy_bullets:
             bullet.draw(screen)
