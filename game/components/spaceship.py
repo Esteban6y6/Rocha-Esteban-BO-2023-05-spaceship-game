@@ -1,17 +1,14 @@
 import pygame
 from pygame.sprite import Sprite
-from game.components.bullets.bullet import Bullet
 
 from game.utils.constants import SPACESHIP, SCREEN_WIDTH, SCREEN_HEIGHT
+from game.components.bullets.bullet import Bullet
 
 class Spaceship(Sprite):
-    SPACESHIP_WIDTH = 40 
-    SPACESHIP_HEIGHT = 60 
-    SPACESHIP_POS_X = SCREEN_WIDTH / 2 
+    SPACESHIP_WIDTH = 40
+    SPACESHIP_HEIGHT = 60
+    SPACESHIP_POS_X = SCREEN_WIDTH / 2
     SPACESHIP_POS_Y = 500
-    #
-    SHOOT_DELAY = 500
-    #
 
     def __init__(self):
         self.image = SPACESHIP
@@ -19,48 +16,42 @@ class Spaceship(Sprite):
         self.rect = self.image.get_rect(midbottom = (self.SPACESHIP_POS_X, self.SPACESHIP_POS_Y))
         self.type = 'player'
         #
-        self.player_bullets = []
-        self.can_shoot = True
-        self.last_shot_time = 0 
-        #self.space_pressed = False
+        self.last_shoot_time = pygame.time.get_ticks()
+        self.shoot_cooldown = 500
         #
-    def update(self, user_input):
-
+    def update(self, user_input, game):
         if user_input[pygame.K_LEFT]:
-            self.rect.x -= 10
-            if self.rect.left < 0:
-                self.rect.right = SCREEN_WIDTH
+            self.move_left()
         elif user_input[pygame.K_RIGHT]:
-            self.rect.x += 10
-            if self.rect.right > SCREEN_WIDTH:
-                self.rect.left = 0
+            self.move_right()
         elif user_input[pygame.K_UP] and self.rect.top > 300:
             self.rect.y -= 10
         elif user_input[pygame.K_DOWN] and self.rect.bottom < SCREEN_HEIGHT:
             self.rect.y += 10
-        
-        #self.space_pressed = user_input[pygame.K_SPACE]
+        #
+        current_time = pygame.time.get_ticks()
+
+        if user_input[pygame.K_SPACE] and current_time - self.last_shoot_time > self.shoot_cooldown:
+            self.shoot(game.bullet_manager)
+            self.last_shoot_time = current_time
+        #
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
+    def move_right(self):
+        self.rect.x += 10
+        if self.rect.right >= SCREEN_WIDTH:
+            self.rect.left = -self.SPACESHIP_WIDTH
+    
+    def move_left(self):
+        self.rect.x -= 10
+        if self.rect.left <= 0:
+            self.rect.right = SCREEN_WIDTH + self.SPACESHIP_WIDTH
+
+    def shoot(self, bullet_manager):
+        bullet = Bullet(self)
+        bullet_manager.add_bullet(bullet)
     #
-    def shoot(self):
-        current_time = pygame.time.get_ticks()
-
-        if self.can_shoot and current_time - self.last_shot_time >= self.SHOOT_DELAY:
-            bullet = Bullet(self)
-            self.player_bullets.append(bullet)
-            self.last_shot_time = current_time
-            self.can_shoot = False
-
-    def reset_shooting(self):
-        current_time = pygame.time.get_ticks()
-
-        if not self.can_shoot and current_time - self.last_shot_time >= self.SHOOT_DELAY:
-            self.can_shoot = True
-
-    def draw_bullets(self, screen):
-        for bullet in self.player_bullets:
-            bullet.update(self.player_bullets)
-            bullet.draw(screen)
+    def reset(self):
+        self.rect.midbottom = (self.SPACESHIP_POS_X, self.SPACESHIP_POS_Y)
     #

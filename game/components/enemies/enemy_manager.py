@@ -1,46 +1,31 @@
-import pygame
+import random
+
 from game.components.enemies.enemy import Enemy
+from game.utils.constants import ENEMY_1, ENEMY_2, ENEMY_3
 
 class EnemyManager:
     def __init__(self):
         self.enemies = []
-        self.enemy_limit = 3  
+        self.enemy_images = [ENEMY_1, ENEMY_2, ENEMY_3]
     
-    #
-    def check_collisions(self, bullets):
-        enemies_to_remove = []
-        bullets_to_remove = []  
-
-        for enemy in self.enemies:
-            for bullet in bullets:
-                if bullet.owner == 'player' and bullet.rect.colliderect(enemy.rect):
-                    enemies_to_remove.append(enemy)
-                    bullets_to_remove.append(bullet)  
-                    break
-    #
-        for enemy in enemies_to_remove:
-            self.enemies.remove(enemy)
-
-        for bullet in bullets_to_remove:
-            bullets.remove(bullet) 
-
     def update(self, game):
         self.add_enemy()
 
         for enemy in self.enemies:
             enemy.update(self.enemies, game)
-        #    
-        self.check_collisions(game.player.player_bullets)
-        #
 
     def draw(self, screen):
         for enemy in self.enemies:
             enemy.draw(screen)
-    #
+
     def add_enemy(self):
-        while len(self.enemies) < self.enemy_limit:
-            enemy = Enemy()
+        if len(self.enemies) < 3:
+            image = random.choice(self.enemy_images)
+            speed_on_x = random.randint(10, 20)
+            speed_on_y = random.randint(1, 5)
+
+            enemy = Enemy(image, speed_on_x, speed_on_y)
             self.enemies.append(enemy)
-    #
+
     def reset(self):
         self.enemies = []

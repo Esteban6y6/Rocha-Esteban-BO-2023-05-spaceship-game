@@ -1,6 +1,6 @@
 import pygame
 
-from game.utils.constants import BG, FONT_STYLE, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, DEFAULT_TYPE
+from game.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, FONT_STYLE
 from game.components.spaceship import Spaceship
 from game.components.enemies.enemy_manager import EnemyManager
 from game.components.bullets.bullet_manager import BulletManager
@@ -11,7 +11,6 @@ class Game:
         pygame.init()
         pygame.display.set_caption(TITLE)
         pygame.display.set_icon(ICON)
-        pygame.mixer.music.load('game/assets/Space.mp3')
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.playing = False
@@ -21,9 +20,6 @@ class Game:
         self.x_pos_bg = 0
         self.y_pos_bg = 0
         self.death_counter = 0
-        #
-        self.space_pressed = False
-        #
         self.player = Spaceship()
         self.enemy_manager = EnemyManager()
         self.bullet_manager = BulletManager()
@@ -37,11 +33,16 @@ class Game:
         pygame.quit()
 
     def run(self):
-        self.score = 0
+        #
+        self.menu.reset_score()
+        #  
         self.bullet_manager.reset()
         self.enemy_manager.reset()
+        self.player.reset()
+        #
+        self.menu.reset_death_count()
+        #
         # Game loop: events - update - draw
-        pygame.mixer.music.play(-1)
         self.playing = True
         while self.playing:
             self.events()
@@ -52,35 +53,23 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.playing = False
-            #
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    self.space_pressed = True
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_SPACE:
-                    self.space_pressed = False
-            #
+
     def update(self):
         user_input = pygame.key.get_pressed()
-        self.player.update(user_input)
-        #
-        if self.space_pressed:
-            self.player.shoot()
-        #
+        self.player.update(user_input, self)
         self.enemy_manager.update(self)
         self.bullet_manager.update(self)
-        self.player.reset_shooting()
 
     def draw(self):
         self.clock.tick(FPS)
         self.screen.fill((255, 255, 255))
         self.draw_background()
         self.player.draw(self.screen)
-        self.player.draw_bullets(self.screen)
         self.enemy_manager.draw(self.screen)
         self.bullet_manager.draw(self.screen)
+        self.draw_score()
         pygame.display.update()
-        pygame.display.flip()
+        # pygame.display.flip()
 
     def draw_background(self):
         image = pygame.transform.scale(BG, (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -91,7 +80,7 @@ class Game:
             self.screen.blit(image, (self.x_pos_bg, self.y_pos_bg - image_height))
             self.y_pos_bg = 0
         self.y_pos_bg += self.game_speed
-    
+
     def show_menu(self):
         self.menu.draw(self.screen)
         self.menu.update(self)
@@ -101,20 +90,29 @@ class Game:
         if self.death_counter > 0:
             self.menu.update_message('Game Over')
 
-            icon = pygame.transform.scale((ICON), (80, 120))
+            icon = pygame.transform.scale(ICON, (80, 120))
             self.screen.blit(icon, ((SCREEN_WIDTH / 2) - 40, (SCREEN_HEIGHT / 2) - 150))
-
+            #
+            self.menu.draw_game_over_stats(self.screen)
+            #
         self.menu.draw(self.screen)
         self.menu.update(self)
-
+        #
+        self.menu.update_highest_score()
+        #
     def increase_death_counter(self):
         self.death_counter += 1
 
     def increase_score(self):
-        self.score += 1
-    
+        self.menu.increase_score()
+
     def draw_score(self):
         font = pygame.font.Font(FONT_STYLE, 30)
-        text = font.render(f'Score: {self.score}', False, 'White')
-        text_rect = text.get_rect(topright = (SCREEN_WIDTH - 30, 30))
+        text = font.render(f'Score: {self.menu.score}', False, 'White')
+        text_rect = text.get_rect(topright=(SCREEN_WIDTH - 30, 30))
         self.screen.blit(text, text_rect)
+        #
+        high_score_text = font.render(f'Highest Score: {self.menu.highest_score}', False, 'White')
+        high_score_rect = high_score_text.get_rect(topright=(SCREEN_WIDTH - 30, 70))
+        self.screen.blit(high_score_text, high_score_rect)
+        #
